@@ -10,7 +10,7 @@ pub fn arg_parsing_derive(input: TokenStream) -> TokenStream {
 
     let fields = match &input.data {
         Data::Struct(data) => &data.fields,
-        _ => panic!("derive should be placed on structs"),
+        _ => panic!("ArgPassing should be placed on structs"),
     };
 
     let mut is_opt_arms = Vec::new();
@@ -90,10 +90,14 @@ pub fn run_command_derive(input: TokenStream) -> TokenStream {
 
     let variants = match &input.data {
         Data::Enum(data) => &data.variants,
-        _ => panic!("derive should be placed on enum"),
+        _ => panic!("RunCommand should be placed on enum"),
     };
 
     let variant_arms = variants.iter().map(|v| {
+        if !matches!(v.fields, syn::Fields::Unit) {
+            panic!("RunCommand can only be used with unit variants");
+        }
+
         let var_name = &v.ident;
         let name = var_name.to_string().to_lowercase();
 

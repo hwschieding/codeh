@@ -86,22 +86,6 @@ pub fn arg_parsing_derive(input: TokenStream) -> TokenStream {
                 })
             }
         }
-
-        // if f.attrs.iter().any(|a| a.path().is_ident("opt")) {
-        //     is_opt_arms.push(quote! {
-        //         #name => { true },
-        //     });
-        //     set_opt_arms.push(quote! {
-        //         #name => { self.#field_name = Some(value); true },
-        //     });
-        // } else if f.attrs.iter().any(|a| a.path().is_ident("flag")) {
-        //     is_flag_arms.push(quote! {
-        //         #name => { true },
-        //     });
-        //     set_flag_arms.push(quote! {
-        //         #name => { self.#field_name = true; true },
-        //     });
-        // }
     }
 
     let expanded = quote! {

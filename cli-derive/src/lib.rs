@@ -60,17 +60,17 @@ pub fn arg_parsing_derive(input: TokenStream) -> TokenStream {
                     _ => false
                 }
             }
-            pub fn is_opt(&self, name: &str) -> bool
+            pub fn is_opt(opt_name: &str) -> bool
             {
-                match name
+                match opt_name
                 {
                     #(#is_opt_arms)*
                     _ => false
                 }
             }
-            pub fn is_flag(&self, name: &str) -> bool
+            pub fn is_flag(flag_name: &str) -> bool
             {
-                match name
+                match flag_name
                 {
                     #(#is_flag_arms)*
                     _ => false

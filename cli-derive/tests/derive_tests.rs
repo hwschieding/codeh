@@ -28,10 +28,10 @@ fn test_arg_parser() {
     assert!(!(my_struct.set_flag("fake_flag")));
     assert!(!(my_struct.set_opt("fake_opt", String::from("fake_val"))));
 
-    assert!(my_struct.is_opt("field1"));
-    assert!(my_struct.is_flag("field2"));
-    assert!(!(my_struct.is_flag("field1")));
-    assert!(!(my_struct.is_opt("fake opt")));
+    assert!(TestStruct::is_opt("field1"));
+    assert!(TestStruct::is_flag("field2"));
+    assert!(!(TestStruct::is_flag("field1")));
+    assert!(!(TestStruct::is_opt("fake opt")));
 
     assert_eq!(
         my_struct.field1.expect("Should be some"),

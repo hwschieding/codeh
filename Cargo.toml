@@ -10,3 +10,6 @@ members = [
 version = "0.0.1"
 edition = "2024"
 license = "GPL-3.0"
+
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }

@@ -5,3 +5,5 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+cli-derive = { path = "../cli-derive" }
+tokio.workspace = true

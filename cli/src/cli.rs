@@ -12,9 +12,9 @@ pub enum RunMode {
 #[derive(Debug, ArgParsing)]
 pub struct RawArgs {
     command: Option<RunMode>,
-    #[opt]
+    #[args(opt, alt = "m")]
     model: Option<String>,
-    #[opt]
+    #[args(opt, alt = "p")]
     provider: Option<String>,
 }
 

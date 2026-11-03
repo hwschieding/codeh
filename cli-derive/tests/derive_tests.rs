@@ -4,9 +4,9 @@ use cli_derive::*;
 
 #[derive(ArgParsing)]
 struct TestStruct {
-    #[opt]
+    #[args(opt, alt = "f1", alt = "fld1")]
     field1: Option<String>,
-    #[flag]
+    #[args(flag)]
     field2: bool,
 }
 
@@ -23,12 +23,14 @@ fn test_arg_parser() {
         field2: false,
     };
 
-    assert!(my_struct.set_opt("field1", String::from("hello")));
+    assert!(my_struct.set_opt("f1", String::from("hello")));
     assert!(my_struct.set_flag("field2"));
     assert!(!(my_struct.set_flag("fake_flag")));
     assert!(!(my_struct.set_opt("fake_opt", String::from("fake_val"))));
 
     assert!(TestStruct::is_opt("field1"));
+    assert!(TestStruct::is_opt("f1"));
+    assert!(TestStruct::is_opt("fld1"));
     assert!(TestStruct::is_flag("field2"));
     assert!(!(TestStruct::is_flag("field1")));
     assert!(!(TestStruct::is_opt("fake opt")));

@@ -1,15 +1,43 @@
+use darling::{FromDeriveInput, FromField};
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput, parse_macro_input};
 
-#[proc_macro_derive(ArgParsing, attributes(opt, flag))]
+#[derive(Debug, FromDeriveInput)]
+#[darling(attributes(args))]
+struct ArgContainer {
+    ident: syn::Ident,
+    data: darling::ast::Data<(), FieldOpts>,
+}
+
+#[derive(Debug, FromField)]
+#[darling(attributes(args))]
+struct FieldOpts {
+    ident: Option<syn::Ident>,
+
+    #[darling(default)]
+    opt: bool,
+
+    #[darling(default)]
+    flag: bool,
+
+    #[darling(multiple)]
+    alt: Vec<String>,
+}
+
+#[proc_macro_derive(ArgParsing, attributes(args))]
 pub fn arg_parsing_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
+    let input = parse_macro_input!(input as syn::DeriveInput);
 
-    let struct_name = &input.ident;
+    let opts = match ArgContainer::from_derive_input(&input) {
+        Ok(val) => val,
+        Err(e) => return TokenStream::from(e.write_errors()),
+    };
 
-    let fields = match &input.data {
-        Data::Struct(data) => &data.fields,
+    let struct_name = &opts.ident;
+
+    let fields = match &opts.data {
+        darling::ast::Data::Struct(fields) => &fields.fields,
         _ => panic!("ArgPassing should be placed on structs"),
     };
 
@@ -25,21 +53,55 @@ pub fn arg_parsing_derive(input: TokenStream) -> TokenStream {
         };
         let name = field_name.to_string();
 
-        if f.attrs.iter().any(|a| a.path().is_ident("opt")) {
+        if f.opt {
             is_opt_arms.push(quote! {
                 #name => { true },
             });
             set_opt_arms.push(quote! {
                 #name => { self.#field_name = Some(value); true },
             });
-        } else if f.attrs.iter().any(|a| a.path().is_ident("flag")) {
+            for alt_name in &f.alt {
+                is_opt_arms.push(quote! {
+                    #alt_name => { true },
+                });
+                set_opt_arms.push(quote! {
+                    #alt_name => { self.#field_name = Some(value); true },
+                });
+            }
+        }
+
+        if f.flag {
             is_flag_arms.push(quote! {
                 #name => { true },
             });
             set_flag_arms.push(quote! {
                 #name => { self.#field_name = true; true },
             });
+            for alt_name in &f.alt {
+                is_flag_arms.push(quote! {
+                    #alt_name => { true },
+                });
+                set_flag_arms.push(quote! {
+                    #alt_name => { self.#field_name = true; true },
+                })
+            }
         }
+
+        // if f.attrs.iter().any(|a| a.path().is_ident("opt")) {
+        //     is_opt_arms.push(quote! {
+        //         #name => { true },
+        //     });
+        //     set_opt_arms.push(quote! {
+        //         #name => { self.#field_name = Some(value); true },
+        //     });
+        // } else if f.attrs.iter().any(|a| a.path().is_ident("flag")) {
+        //     is_flag_arms.push(quote! {
+        //         #name => { true },
+        //     });
+        //     set_flag_arms.push(quote! {
+        //         #name => { self.#field_name = true; true },
+        //     });
+        // }
     }
 
     let expanded = quote! {

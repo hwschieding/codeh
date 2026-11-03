@@ -3,12 +3,14 @@ use std::fmt;
 #[derive(Debug)]
 pub enum CliError {
     BadParse(&'static str),
+    NoValue(String),
 }
 
 impl fmt::Display for CliError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::BadParse(msg) => write!(f, "{msg}"),
+            Self::NoValue(msg) => write!(f, "{msg}"),
         }
     }
 }

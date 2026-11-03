@@ -49,28 +49,59 @@ impl RawArgs {
         let mut arg_iter = arg_vec.into_iter();
         arg_iter.next();
         while let Some(arg) = arg_iter.next() {
-            let arg = format_arg(arg);
-
-            if let Some(r) = RunMode::from_name(&arg) {
-                res.set_command(Some(r));
-            }
-
-            if Self::is_opt(&arg) {
-                res.set_opt(
-                    &arg,
-                    arg_iter.next().ok_or(CliError::NoValue(format!(
-                        "No value given for arg '{}'",
-                        arg
-                    )))?,
-                );
-            };
-
-            if Self::is_flag(&arg) {
-                res.set_flag(&arg);
+            match ArgType::check(&arg) {
+                Some(ArgType::Command) => {
+                    if let Some(r) = RunMode::from_name(&arg) {
+                        res.set_command(Some(r));
+                    }
+                }
+                Some(ArgType::Option) => {
+                    res.try_opt_or_flag(&format_arg(arg), &mut arg_iter)?;
+                }
+                None => (),
             }
         }
 
         Ok(res)
+    }
+
+    fn try_opt_or_flag(
+        &mut self,
+        arg: &str,
+        arg_iter: &mut impl Iterator<Item = String>,
+    ) -> Result<(), CliError> {
+        if Self::is_opt(arg) {
+            if !(self.set_opt(
+                arg,
+                arg_iter.next().ok_or(CliError::NoValue(format!(
+                    "No value given for arg '{}'",
+                    arg
+                )))?,
+            )) {
+                return Err(CliError::BadParse("Given option could not be parsed"));
+            }
+        }
+        if Self::is_flag(arg) {
+            if !(self.set_flag(arg)) {
+                return Err(CliError::BadParse("Given flag could not be parsed"));
+            }
+        }
+        Ok(())
+    }
+}
+
+enum ArgType {
+    Command,
+    Option,
+}
+
+impl ArgType {
+    fn check(arg: &str) -> Option<Self> {
+        match arg.chars().nth(0) {
+            Some('-') => Some(Self::Option),
+            Some(_) => Some(Self::Command),
+            None => None,
+        }
     }
 }
 

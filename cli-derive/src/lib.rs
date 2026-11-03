@@ -30,7 +30,7 @@ pub fn arg_parsing_derive(input: TokenStream) -> TokenStream {
                 #name => { true },
             });
             set_opt_arms.push(quote! {
-                #name => { self.#field_name = value; true },
+                #name => { self.#field_name = Some(value); true },
             });
         } else if f.attrs.iter().any(|a| a.path().is_ident("flag")) {
             is_flag_arms.push(quote! {

@@ -5,7 +5,7 @@ use cli_derive::*;
 #[derive(ArgParsing)]
 struct TestStruct {
     #[opt]
-    field1: String,
+    field1: Option<String>,
     #[flag]
     field2: bool,
 }
@@ -19,7 +19,7 @@ enum TestCommands {
 #[test]
 fn test_arg_parser() {
     let mut my_struct = TestStruct {
-        field1: String::new(),
+        field1: Some(String::new()),
         field2: false,
     };
 
@@ -33,7 +33,10 @@ fn test_arg_parser() {
     assert!(!(my_struct.is_flag("field1")));
     assert!(!(my_struct.is_opt("fake opt")));
 
-    assert_eq!(my_struct.field1, String::from("hello"));
+    assert_eq!(
+        my_struct.field1.expect("Should be some"),
+        String::from("hello")
+    );
     assert!(my_struct.field2);
 }
 

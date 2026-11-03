@@ -1,5 +1,4 @@
 mod cli;
-pub(crate) mod cli_error;
 
 #[cfg(test)]
 mod tests;

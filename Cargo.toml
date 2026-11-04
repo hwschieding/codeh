@@ -4,6 +4,7 @@ members = [
     "cli",
     "cli-derive",
     "agent-core",
+    "llm-abstract",
 ]
 
 [workspace.package]
@@ -13,3 +14,4 @@ license = "GPL-3.0"
 
 [workspace.dependencies]
 tokio = { version = "1", features = ["full"] }
+async-trait = { version = "0.1" }

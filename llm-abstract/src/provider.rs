@@ -1,1 +1,1 @@
-mod ollama;
+pub mod ollama;

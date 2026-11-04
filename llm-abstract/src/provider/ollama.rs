@@ -1,5 +1,5 @@
 use crate::llm_error::LlmError;
-use crate::{LlmProvider, LlmRequest, LlmResonse};
+use crate::{LlmProvider, LlmRequest, LlmResonse, RegisteredTool, Tool, ToolRegistry};
 
 // use reqwest::Client;
 use http_handler::HttpHandler;
@@ -26,6 +26,7 @@ impl OllamaLlm {
 impl LlmProvider for OllamaLlm {
     type ChatReq = OllamaMessage;
     type ChatRes = OllamaResponse;
+    type ProviderTool = OllamaTool;
 
     async fn chat(&mut self, request: Self::ChatReq) -> Result<Self::ChatRes, LlmError> {
         self.history.push_msg(request);
@@ -37,12 +38,69 @@ impl LlmProvider for OllamaLlm {
 
         Ok(res)
     }
+
+    fn register_tools(&mut self, tools: ToolRegistry) -> () {
+        let ollama_tools = tools
+            .registered_tools
+            .into_iter()
+            .map(|t| OllamaTool::from(t))
+            .collect::<Vec<_>>();
+
+        self.history.add_tools(ollama_tools);
+    }
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum OllamaToolType {
+    Function,
+}
+
+#[derive(Debug, Serialize)]
+pub struct OllamaFunction {
+    name: String,
+    parameters: Value,
+    description: String,
+}
+
+impl OllamaFunction {
+    fn new_func(name: String, parameters: Value, description: String) -> Self {
+        Self {
+            name,
+            parameters,
+            description,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct OllamaTool {
+    #[serde(rename = "type")]
+    tool_type: OllamaToolType,
+    function: OllamaFunction,
+}
+
+impl Tool for OllamaTool {}
+
+impl From<RegisteredTool> for OllamaTool {
+    fn from(value: RegisteredTool) -> Self {
+        Self {
+            tool_type: OllamaToolType::Function,
+            function: OllamaFunction::new_func(
+                value.func_name,
+                value.func_parameters,
+                value.func_desc,
+            ),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
 pub struct OllamaRequest {
     model: String,
     messages: Vec<OllamaMessage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tools: Option<Vec<OllamaTool>>,
     stream: bool,
 }
 impl OllamaRequest {
@@ -51,11 +109,15 @@ impl OllamaRequest {
         Self {
             model,
             messages,
+            tools: None,
             stream: false,
         }
     }
     fn push_msg(&mut self, msg: OllamaMessage) -> () {
         self.messages.push(msg);
+    }
+    fn add_tools(&mut self, tools: Vec<OllamaTool>) -> () {
+        self.tools = Some(tools);
     }
 }
 

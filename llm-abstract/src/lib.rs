@@ -1,4 +1,5 @@
 use llm_error::LlmError;
+use serde_json::Value;
 
 pub(crate) mod llm_error;
 pub mod provider;
@@ -10,10 +11,39 @@ mod tests;
 pub trait LlmProvider {
     type ChatReq: LlmRequest; // request type
     type ChatRes: LlmResonse; // response type
+    type ProviderTool: Tool;
 
     async fn chat(&mut self, request: Self::ChatReq) -> Result<Self::ChatRes, LlmError>;
     fn new_user_msg(content: String) -> Self::ChatReq {
         Self::ChatReq::new_user_msg(content)
+    }
+
+    fn register_tools(&mut self, tools: ToolRegistry) -> ();
+}
+
+struct RegisteredTool {
+    func_name: String,
+    func_parameters: Value,
+    func_desc: String,
+}
+
+pub struct ToolRegistry {
+    registered_tools: Vec<RegisteredTool>,
+}
+
+impl ToolRegistry {
+    pub fn new() -> Self {
+        let registered_tools = Vec::new();
+        Self { registered_tools }
+    }
+    pub fn register_tool(&mut self, name: String, parameters: Value, description: String) -> () {
+        let new_tool = RegisteredTool {
+            func_name: name,
+            func_parameters: parameters,
+            func_desc: description,
+        };
+
+        self.registered_tools.push(new_tool);
     }
 }
 
@@ -23,6 +53,7 @@ pub trait LlmRequest {
 pub trait LlmResonse {
     fn get_message(&self) -> &str;
 }
+pub trait Tool {}
 
 // TODO:
 // Implement Ollama API with these traits, bare HTTPS no reqwest.

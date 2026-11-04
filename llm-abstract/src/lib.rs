@@ -1,16 +1,19 @@
-use async_trait::async_trait;
+mod llm_error;
+mod provider;
 
 #[cfg(test)]
 mod tests;
 
-#[async_trait]
+#[async_trait::async_trait]
 pub trait LlmProvider {
-    type ChatReq; // request type
-    type ChatRes; // response type
+    type ChatReq: LlmRequest; // request type
+    type ChatRes: LlmResonse; // response type
 
-    async fn chat(&self, request: Self::ChatReq) -> Self::ChatRes;
+    async fn chat(&mut self, request: Self::ChatReq) -> Self::ChatRes;
 }
 
+pub trait LlmRequest {}
+pub trait LlmResonse {}
+
 // TODO:
-// Add request and response traits.
 // Implement Ollama API with these traits, bare HTTPS no reqwest.

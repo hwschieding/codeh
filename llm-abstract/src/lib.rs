@@ -1,7 +1,7 @@
 use llm_error::LlmError;
 
-mod llm_error;
-mod provider;
+pub(crate) mod llm_error;
+pub mod provider;
 
 #[cfg(test)]
 mod tests;

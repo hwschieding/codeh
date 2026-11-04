@@ -6,7 +6,7 @@ use http_handler::HttpHandler;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub(crate) static OLLAMA_CHAT_ENDPOINT: &str = "127.0.0.1:11434/api/chat";
+pub(crate) static OLLAMA_CHAT_ENDPOINT: &str = "http://localhost:11434/api/chat";
 pub(crate) static OLLAMA_SYS_PROMPT: &str =
     "You are an expert software coding engineer. Keep your answers concise and well structured.";
 

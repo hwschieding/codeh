@@ -25,3 +25,7 @@ impl HttpHandler {
         response.json::<U>().await
     }
 }
+
+pub fn get_client() -> reqwest::Result<reqwest::Client> {
+    reqwest::Client::builder().build()
+}

@@ -6,4 +6,6 @@ license.workspace = true
 
 [dependencies]
 cli-derive = { path = "../cli-derive" }
+llm-abstract = { path = "../llm-abstract" }
+http-handler = { path = "../http-handler" }
 tokio.workspace = true

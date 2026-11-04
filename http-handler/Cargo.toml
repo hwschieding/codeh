@@ -9,4 +9,3 @@ tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 reqwest.workspace = true
-futures-util = "0.3"

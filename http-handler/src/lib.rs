@@ -1,5 +1,3 @@
-use futures_util::StreamExt;
-
 #[cfg(test)]
 mod tests;
 

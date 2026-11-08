@@ -12,16 +12,17 @@ pub trait LlmProvider {
     type ChatReq: LlmRequest; // request type
     type ChatRes: LlmResonse; // response type
     type ProviderTool: Tool;
+    type ProviderToolCall: ToolCall;
 
     async fn chat(&mut self, request: Self::ChatReq) -> Result<Self::ChatRes, LlmError>;
     fn new_user_msg(content: String) -> Self::ChatReq {
         Self::ChatReq::new_user_msg(content)
     }
 
-    fn register_tools(&mut self, tools: ToolRegistry) -> ();
+    fn add_tools(&mut self, tools: ToolRegistry) -> ();
 }
 
-struct RegisteredTool {
+pub struct RegisteredTool {
     func_name: String,
     func_parameters: Value,
     func_desc: String,
@@ -51,9 +52,11 @@ pub trait LlmRequest {
     fn new_user_msg(content: String) -> Self;
 }
 pub trait LlmResonse {
-    fn get_message(&self) -> &str;
-}
-pub trait Tool {}
+    type ProviderToolCall: ToolCall;
 
-// TODO:
-// Implement Ollama API with these traits, bare HTTPS no reqwest.
+    fn get_message_content(&self) -> &str;
+    fn get_message_tools(&self) -> Option<&Vec<Self::ProviderToolCall>>;
+}
+pub trait Tool: From<RegisteredTool> {}
+
+pub trait ToolCall {}

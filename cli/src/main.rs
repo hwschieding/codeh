@@ -35,7 +35,7 @@ async fn test_run_ollama() -> Result<(), Box<dyn std::error::Error>> {
     println!("Sending chat to LLM");
     let res = ollama.chat(msg).await?;
 
-    println!("{}", res.get_message());
+    println!("{}", res.get_message_content());
 
     Ok(())
 }

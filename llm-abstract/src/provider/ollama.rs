@@ -1,5 +1,5 @@
 use crate::llm_error::LlmError;
-use crate::{LlmProvider, LlmRequest, LlmResonse, RegisteredTool, Tool, ToolRegistry};
+use crate::{LlmProvider, LlmRequest, LlmResonse, RegisteredTool, Tool, ToolCall, ToolRegistry};
 
 // use reqwest::Client;
 use http_handler::HttpHandler;
@@ -27,6 +27,7 @@ impl LlmProvider for OllamaLlm {
     type ChatReq = OllamaMessage;
     type ChatRes = OllamaResponse;
     type ProviderTool = OllamaTool;
+    type ProviderToolCall = OllamaToolCall;
 
     async fn chat(&mut self, request: Self::ChatReq) -> Result<Self::ChatRes, LlmError> {
         self.history.push_msg(request);
@@ -39,11 +40,11 @@ impl LlmProvider for OllamaLlm {
         Ok(res)
     }
 
-    fn register_tools(&mut self, tools: ToolRegistry) -> () {
+    fn add_tools(&mut self, tools: ToolRegistry) -> () {
         let ollama_tools = tools
             .registered_tools
             .into_iter()
-            .map(|t| OllamaTool::from(t))
+            .map(|t| Self::ProviderTool::from(t))
             .collect::<Vec<_>>();
 
         self.history.add_tools(ollama_tools);
@@ -128,8 +129,14 @@ pub struct OllamaResponse {
 }
 
 impl LlmResonse for OllamaResponse {
-    fn get_message(&self) -> &str {
-        self.message.content()
+    type ProviderToolCall = OllamaToolCall;
+
+    fn get_message_content(&self) -> &str {
+        &self.message.content()
+    }
+    // fn get_message_tools(&self) -> Option<&Vec<impl ToolCall>> {}
+    fn get_message_tools(&self) -> Option<&Vec<Self::ProviderToolCall>> {
+        self.message.tool_calls()
     }
 }
 
@@ -137,6 +144,8 @@ impl LlmResonse for OllamaResponse {
 pub struct OllamaToolCall {
     function: OllamaFunctionCall,
 }
+
+impl ToolCall for OllamaToolCall {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OllamaFunctionCall {
@@ -171,6 +180,9 @@ impl OllamaMessage {
     }
     fn content(&self) -> &str {
         &self.content
+    }
+    fn tool_calls(&self) -> Option<&Vec<OllamaToolCall>> {
+        self.tool_calls.as_ref()
     }
 }
 

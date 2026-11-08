@@ -37,14 +37,8 @@ impl ToolRegistry {
         let registered_tools = Vec::new();
         Self { registered_tools }
     }
-    pub fn register_tool(&mut self, name: String, parameters: Value, description: String) -> () {
-        let new_tool = RegisteredTool {
-            func_name: name,
-            func_parameters: parameters,
-            func_desc: description,
-        };
-
-        self.registered_tools.push(new_tool);
+    pub fn register_tool(&mut self, tool: impl Into<RegisteredTool>) -> () {
+        self.registered_tools.push(tool.into());
     }
 }
 

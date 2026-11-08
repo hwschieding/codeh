@@ -10,6 +10,7 @@ pub(crate) static OLLAMA_CHAT_ENDPOINT: &str = "http://localhost:11434/api/chat"
 pub(crate) static OLLAMA_SYS_PROMPT: &str =
     "You are an expert software coding engineer. Keep your answers concise and well structured.";
 
+#[derive(Debug)]
 pub struct OllamaLlm {
     handler: HttpHandler,
     history: OllamaRequest,
@@ -31,6 +32,8 @@ impl LlmProvider for OllamaLlm {
 
     async fn chat(&mut self, request: Self::ChatReq) -> Result<Self::ChatRes, LlmError> {
         self.history.push_msg(request);
+
+        println!("{}", serde_json::to_string(&self.history).unwrap());
 
         let res = self
             .handler
@@ -122,7 +125,7 @@ impl OllamaRequest {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct OllamaResponse {
     message: OllamaMessage,
     done: bool,

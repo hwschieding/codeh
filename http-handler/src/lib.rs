@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests;
 
+#[derive(Debug)]
 pub struct HttpHandler {
     client: reqwest::Client,
 }

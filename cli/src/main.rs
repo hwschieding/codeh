@@ -1,7 +1,10 @@
 use std::env;
 
 use http_handler::HttpHandler;
-use llm_abstract::{LlmProvider, LlmResonse, provider::ollama::OllamaLlm};
+use llm_abstract::{
+    LlmProvider, LlmResonse, RegisteredTool, ToolRegistry, provider::ollama::OllamaLlm,
+};
+use serde_json::{Value, json};
 
 mod cli;
 
@@ -21,21 +24,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+struct MyTool {
+    name: String,
+    desc: String,
+    param: Value,
+}
+
+impl Into<RegisteredTool> for MyTool {
+    fn into(self) -> RegisteredTool {
+        RegisteredTool::new(self.name, self.param, self.desc)
+    }
+}
+
 async fn test_run_ollama() -> Result<(), Box<dyn std::error::Error>> {
     let client = http_handler::get_client()?;
-    let model = String::from("qwen2.5-coder:7b");
+    let model = String::from("qwen2.5:7b");
     let handler = HttpHandler::new(client);
 
+    let mut tool_registry = ToolRegistry::new();
+    tool_registry.register_tool(MyTool {
+        name: String::from("read_file"),
+        desc: String::from("Read contents of a file at the specified path."),
+        param: json!({
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                },
+            },
+            "required": ["file_path"],
+        }),
+    });
     let mut ollama = OllamaLlm::new(handler, model);
+    ollama.add_tools(tool_registry);
+
+    println!("{:?}", ollama);
 
     let msg = OllamaLlm::new_user_msg(String::from(
-        "Write a Rust function that caculates the factorial of the input.",
+        "Read file \"test.txt\" and display it's contents.",
     ));
 
     println!("Sending chat to LLM");
     let res = ollama.chat(msg).await?;
 
-    println!("{}", res.get_message_content());
+    println!("{}", serde_json::to_string(&res).unwrap());
 
     Ok(())
 }

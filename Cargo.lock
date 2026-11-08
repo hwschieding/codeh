@@ -112,6 +112,7 @@ dependencies = [
  "cli-derive",
  "http-handler",
  "llm-abstract",
+ "serde_json",
  "tokio",
 ]
 

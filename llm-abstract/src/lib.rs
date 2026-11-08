@@ -28,6 +28,16 @@ pub struct RegisteredTool {
     func_desc: String,
 }
 
+impl RegisteredTool {
+    pub fn new(name: String, parameters: Value, desc: String) -> Self {
+        Self {
+            func_name: name,
+            func_desc: desc,
+            func_parameters: parameters,
+        }
+    }
+}
+
 pub struct ToolRegistry {
     registered_tools: Vec<RegisteredTool>,
 }

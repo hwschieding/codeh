@@ -9,3 +9,4 @@ cli-derive = { path = "../cli-derive" }
 llm-abstract = { path = "../llm-abstract" }
 http-handler = { path = "../http-handler" }
 tokio.workspace = true
+serde_json.workspace = true
